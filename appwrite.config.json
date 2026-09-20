@@ -1,0 +1,87 @@
+{
+  "projectId": "REPLACE_WITH_YOUR_PROJECT_ID",
+  "projectName": "HAUZ Take Home",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
+  "tablesDB": [
+    {
+      "$id": "main",
+      "name": "HAUZ",
+      "enabled": true
+    }
+  ],
+  "tables": [
+    {
+      "$id": "personal_accounts",
+      "$permissions": [],
+      "databaseId": "main",
+      "name": "Personal Accounts",
+      "enabled": true,
+      "rowSecurity": false,
+      "columns": [
+        {
+          "key": "appwrite_user_id",
+          "type": "string",
+          "required": true,
+          "size": 36
+        },
+        {
+          "key": "first_name",
+          "type": "string",
+          "required": true,
+          "size": 100
+        },
+        {
+          "key": "last_name",
+          "type": "string",
+          "required": true,
+          "size": 100
+        },
+        {
+          "key": "role",
+          "type": "string",
+          "required": true,
+          "format": "enum",
+          "elements": ["property_owner", "realtor"]
+        },
+        {
+          "key": "contact_email",
+          "type": "string",
+          "required": false,
+          "format": "email"
+        },
+        {
+          "key": "bio",
+          "type": "string",
+          "required": false,
+          "size": 2000
+        }
+      ],
+      "indexes": [
+        {
+          "key": "uniq_appwrite_user_id",
+          "type": "unique",
+          "columns": ["appwrite_user_id"]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "$id": "personal-account",
+      "name": "personal-account",
+      "enabled": true,
+      "logging": true,
+      "runtime": "node-22",
+      "deploymentRetention": 7,
+      "execute": ["users"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": "node_modules\n.npm",
+      "scopes": ["rows.read", "rows.write"],
+      "path": "functions/personal-account"
+    }
+  ]
+}

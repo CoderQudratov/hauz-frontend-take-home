@@ -1,0 +1,38 @@
+/* Deliberately minimal. Styling is not part of this task. */
+
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem;
+  max-width: 44rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.4rem;
+  font: inherit;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+}
