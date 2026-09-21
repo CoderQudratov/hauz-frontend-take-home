@@ -16,7 +16,10 @@ export const Route = createFileRoute('/onboarding')({
   validateSearch: searchSchema,
   beforeLoad: ({ context, search }) => {
     if (!context.auth.user) {
-      throw redirect({ to: '/sign-in', search: { redirect: '/onboarding' } })
+      throw redirect({
+        to: '/sign-in',
+        search: { redirect: safeRedirectTarget(search.redirect) },
+      })
     }
     // Someone who already has an account skips onboarding entirely.
     if (context.auth.account) {
