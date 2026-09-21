@@ -1,10 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 
-import { sessionClient } from './appwrite'
+import { accountFor, sessionClient } from './appwrite'
 import { createPersonalAccount, updatePersonalAccount } from './personal-account'
 import { sanitizeError } from './safe-error'
-import { readSessionCookie } from './session-cookie'
+import { clearSessionCookie, readSessionCookie } from './session-cookie'
 
 class NotSignedInError extends Error {
   constructor() {
@@ -12,12 +12,27 @@ class NotSignedInError extends Error {
   }
 }
 
-function requireSessionClient() {
+/**
+ * A cookie being present isn't proof it's still good — the Appwrite session
+ * behind it can have expired or been revoked. Verify it the same way
+ * getAuthState does (Account.get()) before trusting it for a write, and
+ * clear it on the same "any failure means signed out" terms.
+ */
+async function requireSessionClient() {
   const secret = readSessionCookie()
   if (!secret) {
     throw new NotSignedInError()
   }
-  return sessionClient(secret)
+
+  const client = sessionClient(secret)
+  try {
+    await accountFor(client).get()
+  } catch {
+    clearSessionCookie()
+    throw new NotSignedInError()
+  }
+
+  return client
 }
 
 /**
@@ -36,7 +51,7 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     try {
-      return await createPersonalAccount(requireSessionClient(), data)
+      return await createPersonalAccount(await requireSessionClient(), data)
     } catch (error) {
       if (error instanceof NotSignedInError) {
         throw error
@@ -56,7 +71,7 @@ export const updateProfile = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     try {
-      return await updatePersonalAccount(requireSessionClient(), data)
+      return await updatePersonalAccount(await requireSessionClient(), data)
     } catch (error) {
       if (error instanceof NotSignedInError) {
         throw error
