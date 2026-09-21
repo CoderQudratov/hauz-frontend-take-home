@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { sessionClient } from './appwrite'
 import { createPersonalAccount, updatePersonalAccount } from './personal-account'
+import { sanitizeError } from './safe-error'
 import { readSessionCookie } from './session-cookie'
 
 class NotSignedInError extends Error {
@@ -34,7 +35,14 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }) => {
-    return createPersonalAccount(requireSessionClient(), data)
+    try {
+      return await createPersonalAccount(requireSessionClient(), data)
+    } catch (error) {
+      if (error instanceof NotSignedInError) {
+        throw error
+      }
+      throw sanitizeError(error, "Couldn't create your account. Try again.")
+    }
   })
 
 export const updateProfile = createServerFn({ method: 'POST' })
@@ -47,5 +55,12 @@ export const updateProfile = createServerFn({ method: 'POST' })
     }),
   )
   .handler(async ({ data }) => {
-    return updatePersonalAccount(requireSessionClient(), data)
+    try {
+      return await updatePersonalAccount(requireSessionClient(), data)
+    } catch (error) {
+      if (error instanceof NotSignedInError) {
+        throw error
+      }
+      throw sanitizeError(error, "Couldn't save your profile. Try again.")
+    }
   })

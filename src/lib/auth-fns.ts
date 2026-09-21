@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { accountFor, adminClient, sessionClient } from './appwrite'
 import { getPersonalAccount, type PersonalAccount } from './personal-account'
+import { sanitizeError } from './safe-error'
 import { clearSessionCookie, readSessionCookie, writeSessionCookie } from './session-cookie'
 
 export interface AuthState {
@@ -14,28 +15,41 @@ export interface AuthState {
 export const requestEmailCode = createServerFn({ method: 'POST' })
   .validator(z.object({ email: z.email() }))
   .handler(async ({ data }) => {
-    const account = accountFor(adminClient())
-    const token = await account.createEmailToken({
-      userId: crypto.randomUUID(),
-      email: data.email,
-    })
+    try {
+      const account = accountFor(adminClient())
+      const token = await account.createEmailToken({
+        userId: crypto.randomUUID(),
+        email: data.email,
+      })
 
-    return { userId: token.userId }
+      return { userId: token.userId }
+    } catch (error) {
+      throw sanitizeError(error, "Couldn't send a sign-in code. Try again in a moment.")
+    }
   })
 
 /** Step 2: exchange the code for a session, and report whether onboarding is needed. */
 export const verifyEmailCode = createServerFn({ method: 'POST' })
   .validator(z.object({ userId: z.string().min(1), secret: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const account = accountFor(adminClient())
-    const session = await account.createSession({ userId: data.userId, secret: data.secret })
+    let session
+    try {
+      const account = accountFor(adminClient())
+      session = await account.createSession({ userId: data.userId, secret: data.secret })
+    } catch (error) {
+      throw sanitizeError(error, 'That code is invalid or has expired.')
+    }
 
     writeSessionCookie(session.secret, session.expire)
 
-    const client = sessionClient(session.secret)
-    const existingAccount = await getPersonalAccount(client)
+    try {
+      const client = sessionClient(session.secret)
+      const existingAccount = await getPersonalAccount(client)
 
-    return { needsOnboarding: existingAccount === null }
+      return { needsOnboarding: existingAccount === null }
+    } catch (error) {
+      throw sanitizeError(error, "Signed in, but couldn't check your account. Try refreshing.")
+    }
   })
 
 /**
