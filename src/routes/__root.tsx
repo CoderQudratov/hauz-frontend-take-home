@@ -5,6 +5,9 @@ import {
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 
+import { Header } from '#/components/Header'
+import { authQueryOptions } from '#/lib/auth-query'
+
 import appCss from '../styles.css?url'
 
 export interface RouterContext {
@@ -12,6 +15,13 @@ export interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async ({ context }) => {
+    const auth = await context.queryClient.query({
+      ...authQueryOptions(),
+      staleTime: 60_000,
+    })
+    return { auth }
+  },
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -30,7 +40,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {/* The site header belongs here. See TASK.md. */}
+        <Header />
         {children}
         <Scripts />
       </body>
