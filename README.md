@@ -1,7 +1,9 @@
-# HAUZ frontend take-home starter
+# HAUZ frontend take-home
 
-A blank TanStack Start app plus the Appwrite Function you will call from it.
-Read `TASK.md` for what to build. This file is only about getting it running.
+Sign in with an email code, onboarding, and a profile page, built on TanStack
+Start against the Appwrite Function in `functions/personal-account`. See
+`NOTES.md` for the main decisions and anything in `TASK.md` this disagrees
+with.
 
 ## What you need
 
@@ -81,11 +83,16 @@ http://localhost:3000
 ## What is in here
 
 ```
-src/                          the app you are building; it is empty on purpose
+src/
   router.tsx                  router setup
-  routes/__root.tsx           the document shell
-  routes/index.tsx            placeholder home page
-functions/personal-account/   the Function, already written
+  routes/__root.tsx            document shell, loads auth state for the header
+  routes/index.tsx             home page
+  routes/sign-in.tsx           email code sign-in
+  routes/onboarding.tsx        first name, last name, role
+  routes/profile.tsx           view/edit profile, signed-in only
+  components/Header.tsx        sign in / name + log out, correct on first paint
+  lib/                         Appwrite clients, session cookie, server functions
+functions/personal-account/   the Function, unchanged
 appwrite.config.json          database, table and Function definitions
 ```
 
