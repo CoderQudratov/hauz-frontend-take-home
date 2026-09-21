@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 
 import { authQueryOptions } from '#/lib/auth-query'
 import { updateProfile } from '#/lib/profile-fns'
@@ -21,6 +21,7 @@ function Profile() {
   const { auth } = Route.useRouteContext()
   const account = auth.account!
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   const [firstName, setFirstName] = useState(account.firstName)
   const [lastName, setLastName] = useState(account.lastName)
@@ -39,6 +40,7 @@ function Profile() {
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: authQueryOptions().queryKey })
+      await router.invalidate()
     },
   })
 
