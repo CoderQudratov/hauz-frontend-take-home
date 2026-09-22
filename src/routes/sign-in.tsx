@@ -40,7 +40,7 @@ function SignIn() {
   const [code, setCode] = useState('')
 
   const requestCode = useMutation({
-    mutationFn: () => requestEmailCode({ data: { email } }),
+    mutationFn: () => requestEmailCode({ data: { email: email.trim() } }),
     onSuccess: (result) => {
       setUserId(result.userId)
       setStep('code')
