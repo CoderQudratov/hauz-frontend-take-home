@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 
-import { accountFor, adminClient, sessionClient } from './appwrite'
+import { accountFor, apiKeyClient, sessionClient } from './appwrite'
 import { getPersonalAccount, type PersonalAccount } from './personal-account'
 import { sanitizeError } from './safe-error'
 import { clearSessionCookie, readSessionCookie, writeSessionCookie } from './session-cookie'
@@ -16,7 +16,7 @@ export const requestEmailCode = createServerFn({ method: 'POST' })
   .validator(z.object({ email: z.email() }))
   .handler(async ({ data }) => {
     try {
-      const account = accountFor(adminClient())
+      const account = accountFor(apiKeyClient())
       const token = await account.createEmailToken({
         userId: crypto.randomUUID(),
         email: data.email,
@@ -34,7 +34,7 @@ export const verifyEmailCode = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     let session
     try {
-      const account = accountFor(adminClient())
+      const account = accountFor(apiKeyClient())
       session = await account.createSession({ userId: data.userId, secret: data.secret })
     } catch (error) {
       throw sanitizeError(error, 'That code is invalid or has expired.')
