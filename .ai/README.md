@@ -34,13 +34,13 @@ For every task:
 
 Use the prompts in this order:
 
-1. `01-audit.md`
-2. `02-auth.md`
-3. `03-onboarding.md`
-4. `04-profile.md`
-5. `05-header-logout.md`
-6. `06-security-review.md`
-7. `07-final-review.md`
+1. `.ai/prompts/01-audit.md`
+2. `.ai/prompts/02-auth.md`
+3. `.ai/prompts/03-onboarding.md`
+4. `.ai/prompts/04-profile.md`
+5. `.ai/prompts/05-header-logout.md`
+6. `.ai/prompts/06-security-review.md`
+7. `.ai/prompts/07-final-review.md`
 
 Do not skip the audit unless there is a specific reason.
 

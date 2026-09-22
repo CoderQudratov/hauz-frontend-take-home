@@ -66,33 +66,16 @@ restricts it to same-page relative paths and falls back to `/` otherwise.
 Built with Claude Code end to end (server functions, routes, this file).
 Three things it got wrong that I caught while verifying the build:
 
-1. Named the server-function modules `auth.server.ts` / `profile.server.ts`.
-   TanStack Start's Vite plugin treats any `*.server.*` file as fully
-   server-only and refuses to let client code import it at all — but these
-   modules export `createServerFn` calls that the client *is* meant to call
-   (as an RPC). `npm run build` failed with an explicit
-   `[import-protection] Import denied in client environment` error, which is
-   what caught it. Fixed by renaming to `auth-fns.ts` / `profile-fns.ts`.
-2. Used the object-parameter `queryClient.ensureQueryData(...)` in
-   `__root.tsx`. `tsc --noEmit` flagged it as deprecated in this project's
-   `@tanstack/react-query` version in favor of `queryClient.query({ ...,
-   staleTime: 'static' })`. Switched to `queryClient.query()`.
-3. First draft of `redirect` handling in sign-in/onboarding passed the raw
-   `redirect` search param straight into `navigate({ to })`, an open redirect
-   (see above). Caught on review, not by a tool; added
-   `src/lib/safe-redirect.ts` and applied it everywhere the param is
-   consumed.
-
-1. 7c9cc03
+1. [7c9cc03](https://github.com/CoderQudratov/hauz-frontend-take-home/commit/7c9cc03)
    Manually modified generated routeTree.gen.ts.
    Fixed by restoring/regenerating generated output.
 
-2. 7875b42
+2. [7875b42](https://github.com/CoderQudratov/hauz-frontend-take-home/commit/7875b42)
    Profile update invalidated the auth query but did not refresh
    the root router context, so the header showed stale first name.
    Fixed with router.invalidate().
 
-3. 6c084f0
+3. [6c084f0](https://github.com/CoderQudratov/hauz-frontend-take-home/commit/6c084f0)
    Redirect validation did not reject backslash-based URL normalization
    bypasses.
    Fixed by hardening safeRedirectTarget.
