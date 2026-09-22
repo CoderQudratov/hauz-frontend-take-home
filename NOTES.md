@@ -82,3 +82,17 @@ Three things it got wrong that I caught while verifying the build:
    (see above). Caught on review, not by a tool; added
    `src/lib/safe-redirect.ts` and applied it everywhere the param is
    consumed.
+
+1. 7c9cc03
+   Manually modified generated routeTree.gen.ts.
+   Fixed by restoring/regenerating generated output.
+
+2. 7875b42
+   Profile update invalidated the auth query but did not refresh
+   the root router context, so the header showed stale first name.
+   Fixed with router.invalidate().
+
+3. 6c084f0
+   Redirect validation did not reject backslash-based URL normalization
+   bypasses.
+   Fixed by hardening safeRedirectTarget.
