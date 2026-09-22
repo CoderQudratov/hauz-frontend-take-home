@@ -29,6 +29,24 @@ function redirectAfterSignIn(hasAccount: boolean, redirectTo: string | undefined
   return redirect({ to: target })
 }
 
+/**
+ * Server errors reach here already sanitized to plain text (see
+ * `sanitizeError`) — except a validator rejection, which throws before the
+ * handler's try/catch and surfaces its raw Zod issues as JSON. Anything that
+ * parses as JSON is therefore a validation failure, not text meant to be
+ * read, so it gets the same friendly message client-side validation would
+ * have shown.
+ */
+function toFriendlyMessage(error: Error): string {
+  const message = error.message.trim()
+  try {
+    JSON.parse(message)
+    return 'Please enter a valid email address.'
+  } catch {
+    return message
+  }
+}
+
 function SignIn() {
   const { redirect: redirectTo } = Route.useSearch()
   const navigate = useNavigate()
@@ -36,6 +54,7 @@ function SignIn() {
 
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState<string | null>(null)
   const [userId, setUserId] = useState('')
   const [code, setCode] = useState('')
 
@@ -61,12 +80,29 @@ function SignIn() {
   })
 
   if (step === 'email') {
+    const displayError =
+      emailError ?? (requestCode.isError ? toFriendlyMessage(requestCode.error) : null)
+
     return (
       <main>
         <h1>Sign in</h1>
         <form
+          noValidate
           onSubmit={(event) => {
             event.preventDefault()
+            if (requestCode.isPending) return
+
+            const trimmed = email.trim()
+            if (!trimmed) {
+              setEmailError('Please enter your email address.')
+              return
+            }
+            if (!z.email().safeParse(trimmed).success) {
+              setEmailError('Please enter a valid email address.')
+              return
+            }
+
+            setEmailError(null)
             requestCode.mutate()
           }}
         >
@@ -74,15 +110,17 @@ function SignIn() {
           <input
             id="email"
             type="email"
-            required
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => {
+              setEmail(event.target.value)
+              setEmailError(null)
+            }}
           />
           <button type="submit" disabled={requestCode.isPending}>
             Send code
           </button>
         </form>
-        {requestCode.isError && <p role="alert">{requestCode.error.message}</p>}
+        {displayError && <p role="alert">{displayError}</p>}
       </main>
     )
   }
